@@ -6,6 +6,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+@if (relatedProperties.Any())
+{
+using Microsoft.AspNetCore.Mvc.Filters;
+}
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -61,12 +65,7 @@ namespace @Model.NamespaceName
             {
                 return NotFound();
             }
-@{
-    foreach (var property in relatedProperties.Values)
-    {
-           @:ViewData["@(property.ForeignKeyPropertyNames[0])"] = new SelectList(_context.@property.EntitySetName, "@property.PrimaryKeyNames[0]", "@property.DisplayPropertyName");
-    }
-}
+
             return Page();
         }
 
@@ -99,6 +98,21 @@ namespace @Model.NamespaceName
 
             return RedirectToPage("./Index");
         }
+@if (relatedProperties.Any())
+{
+
+        public override Task OnPageHandlerExecutionAsync(PageHandlerExecutingContext context, PageHandlerExecutionDelegate next)
+        {
+@{
+    foreach (var property in relatedProperties.Values)
+    {
+            @:ViewData["@(property.ForeignKeyPropertyNames[0])"] = new SelectList(_context.@property.EntitySetName, "@property.PrimaryKeyNames[0]", "@property.DisplayPropertyName");
+    }
+}
+
+            return base.OnPageHandlerExecutionAsync(context, next);
+        }
+}
 
         private bool @(Model.ModelTypeName)Exists(@primaryKeyShortTypeName id)
         {
